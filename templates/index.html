@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emotion Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            text-align: center;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        h1 { margin-top: 20px; }
+        img { border: 5px solid #222; margin-top: 20px; }
+        canvas { margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Real-time Emotion Detection</h1>
+    <img src="{{ url_for('video') }}" width="640" height="480" id="videoFeed">
+
+    <canvas id="emotionChart" width="800" height="300"></canvas>
+
+    <script>
+        const ctx = document.getElementById('emotionChart').getContext('2d');
+        const emotionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Confidence (%)',
+                    data: [],
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+
+        // Update chart from backend
+        setInterval(async () => {
+            const response = await fetch('/emotion_data');
+            const data = await response.json();
+            emotionChart.data.labels = data.emotions;
+            emotionChart.data.datasets[0].data = data.confidences;
+            emotionChart.update();
+        }, 2000);
+    </script>
+</body>
+</html>
